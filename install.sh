@@ -7,6 +7,12 @@ set -e
 # kubectl  > v1.16
 # helm     > v3
 
+WILDCARD_BASE_DOMAIN=$1
+if [ -z "$WILDCARD_BASE_DOMAIN" ]; then
+    echo "Please specify the base domain for the wildcard domain as argument 1."
+    exit 1
+fi
+
 KUBECTL_CMD=$(command -v kubectl)
 if [ -z "$KUBECTL_CMD" ]; then
     echo "kubectl is not installed."
@@ -27,53 +33,71 @@ fi
 
 
 
+echo "Please confirm wildcard certificate is made for *.$WILDCARD_BASE_DOMAIN"
+until [[ $CONFIRM =~ ^[Y]$ ]]; do
+    read -rp "Type Y to continue: " -e -i 1 CONFIRM
+done
+CONFIRM=
+echo "Installing Istiod..."
+istioctl install -f ./istio-operator.yaml -n istio-system
 
-
-
-# make certificate!
-
-kubectl create namespace istio-system
-kubectl create secret tls addon-certificates --key server-qcloud.key --cert server-qcloud.pem
-
-
-# install istiod
-
-# edit cm/istio 
-# use /dev/stdout
-# restart istio-ingress-gateway
-
-
-
-
-cd chart
+INGRESS_IP=$(kubectl get svc/ingress-gateway -o 'jsonpath={.status.externalIP}')
+echo "Ingress gateway IP is $INGRESS_IP"
+echo ""
 
 
 
 
-kubectl apply -f ./keycloak/gw.yaml
-kubectl apply -f ./keycloak/vs.yaml
-
-# update DNS settings
 
 
-helm template addons -n istio-system ./chart -f ./values.yaml > gatekeeper/.addons-install-pre.yaml
+echo "Installing KeyCloak..."
+kubectl create secret tls addons-certificates --key certs/server.key --cert certs/server.pem -n istio-system
 
-kubectl kustomize ./gatekeeper > gatekeeper/.addons-install-post.yaml
+helm install addons-keycloak -n istio-system ./addons/chart \
+    --set-string 'switches.keycloak-enabled=true' --wait --timeout 300
+kubectl apply -f ./addons/mesh/keycloak.gw.yaml -n istio-system
+kubectl apply -f ./addons/mesh/keycloak.vs.yaml -n istio-system
 
-kubectl apply -f gatekeeper/.addons-install-post.yaml
+echo "Keycloak hostname: keycloak.$WILDCARD_BASE_DOMAIN"
+echo "Please update DNS and create oidc clients in KeyCloak:"
+echo "DNS: *.$WILDCARD_BASE_DOMAIN"
+echo "IP:  $INGRESS_IP"
+echo "=================="
+echo ""
 
 
 
-# create keycloak client: kiali-client, grafana-client, jaeger-client
-    # Access Type: confidential
-    # Mappers: audiences/groups  (required claim name: groups)
-# create user/group
-    # user: basic
-    # groups: kiali_users, grafana_users, jaeger_users
+echo "Please confirm you've updated your DNS"
+until [[ $CONFIRM =~ ^[Y]$ ]]; do
+    read -rp "Type Y to continue: " -e -i 1 CONFIRM
+done
+CONFIRM=
+echo "Installing mesh addons..."
 
-# edit cm/oauth-proxy-gatekeeper-config: use correct client-secret
-# restart pods: grafana/kiali/jaeger
-# edit svc, add proxy port 8000: grafana/kiali/jaeger
-# k apply gw/vs: grafana/kiali/jaeger
+sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/gatekeeper/configmap/*
+sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/chart/values.yaml
 
-# grafana 可能不需要 gatekeeper!
+helm template addons -n istio-system ./addons/chart \
+    --set-string 'switches.prometheus-enabled=true,switches.grafana-enabled=true,switches.kiali-enabled=true,switches.jaeger-enabled=true' \
+    > ./addons/gatekeeper/.addons-install-pre.yaml
+kubectl kustomize ./addons/gatekeeper > ./addons/gatekeeper/.addons-install-post.yaml
+
+kubectl apply  -n istio-system -f ./addons/gatekeeper/.addons-install-post.yaml
+kubectl rollout status addons-kiali -n istio-system
+kubectl rollout status addons-grafana -n istio-system
+kubectl rollout status addons-jaeger-query -n istio-system
+
+
+for SVC in grafana kiali jaeger ; do
+    sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/mesh/$SVC.gw.yaml
+    sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/mesh/$SVC.vs.yaml
+    
+    kubectl apply -f ./addons/mesh/$SVC.gw.yaml -n istio-system
+    kubectl apply -f ./addons/mesh/$SVC.vs.yaml -n istio-system
+done
+
+
+
+echo -e "\e[1;32mInstallation has completed successfully.\e[0m"
+echo "Please run 'update-oidc-client-secret.sh' to set oidc client secrets after these clients are created in KeyCloak."
+

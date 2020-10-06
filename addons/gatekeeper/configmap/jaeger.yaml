@@ -1,9 +1,9 @@
-redirection-url: http://jaeger.qcloud.jijiechen.com
-discovery-url: https://keycloak.qcloud.jijiechen.com/auth/realms/master
+redirection-url: http://jaeger.WILDCARD_BASE_DOMAIN
+discovery-url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/master
 upstream-url: http://127.0.0.1:16686/
 skip-openid-provider-tls-verify: true
 client-id: jaeger-client
-client-secret: 35e4bcb1-567a-4d03-b9ac-a4cf38841e96
+client-secret: AAAAAAAA
 enable-refresh-tokens: true
 listen: :8000
 secure-cookie: false

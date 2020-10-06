@@ -1,13 +1,13 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: addons-grafana-gateway
+  name: addons-jaeger-gateway
 spec:
   selector:
     istio: ingressgateway
   servers:
   - hosts:
-    - grafana.qcloud.jijiechen.com
+    - jaeger.WILDCARD_BASE_DOMAIN
     port:
       name: http
       number: 80

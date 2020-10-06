@@ -13,4 +13,4 @@ spec:
     tls:
       mode: PASSTHROUGH
     hosts:
-    - keycloak.qcloud.jijiechen.com
+    - keycloak.WILDCARD_BASE_DOMAIN

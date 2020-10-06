@@ -2,8 +2,10 @@ resources:
 - .addons-install-pre.yaml
 
 patchesStrategicMerge:
-- deploy.kiali.yaml
-- deploy.jaeger.yaml
+- jaeger.deploy.yaml
+- jaeger.svc.yaml
+- kiali.deploy.yaml
+- kiali.svc.yaml
 
 generatorOptions:
   disableNameSuffixHash: true

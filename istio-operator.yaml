@@ -1,0 +1,23 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  tag: '1.7.0'
+  namespace: istio-system
+  meshConfig:
+    enableTracing: true
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      tracing:
+        zipkin: 
+          address: addons-jaeger-collector.istio-system.svc:9411
+  values: 
+    global:
+      imagePullPolicy: IfNotPresent
+      controlPlaneSecurityEnabled: true
+      jwtPolicy: first-party-jwt
+    pilot:
+      traceSampling: 0.1
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true

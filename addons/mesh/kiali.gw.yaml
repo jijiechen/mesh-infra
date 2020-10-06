@@ -7,7 +7,7 @@ spec:
     istio: ingressgateway
   servers:
   - hosts:
-    - kiali.qcloud.jijiechen.com
+    - kiali.WILDCARD_BASE_DOMAIN
     port:
       name: http
       number: 80

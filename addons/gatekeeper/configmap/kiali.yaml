@@ -1,9 +1,9 @@
-redirection-url: http://kiali.qcloud.jijiechen.com
-discovery-url: https://keycloak.qcloud.jijiechen.com/auth/realms/master
+redirection-url: http://kiali.WILDCARD_BASE_DOMAIN
+discovery-url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/master
 upstream-url: http://127.0.0.1:20001/
 skip-openid-provider-tls-verify: true
 client-id: kiali-client
-client-secret: e767c153-3c1c-414a-908f-bb4fefc7669f
+client-secret: AAAAAAAA
 enable-refresh-tokens: true
 listen: :8000
 secure-cookie: false
