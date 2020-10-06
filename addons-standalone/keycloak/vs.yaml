@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: addons-keycloak
+spec:
+  gateways:
+  - addons-keycloak-gateway
+  hosts:
+  - '*'
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - keycloak.qcloud.jijiechen.com
+      route:
+        - destination:
+            host: addons-keycloak-http
+            port:
+              number: 8443

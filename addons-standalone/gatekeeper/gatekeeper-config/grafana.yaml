@@ -1,0 +1,17 @@
+redirection-url: http://grafana.qcloud.jijiechen.com
+discovery-url: https://keycloak.qcloud.jijiechen.com/auth/realms/master
+upstream-url: http://127.0.0.1:3000/
+skip-openid-provider-tls-verify: true
+client-id: grafana-client
+client-secret: 7264cf2c-de92-4bfb-8926-b3dd3720fc43
+enable-refresh-tokens: true
+listen: :8000
+secure-cookie: false
+# listen: :8443
+tls-cert: 
+tls-private-key: 
+encryption-key: nkOfcT6jYCsXFuV5YRkt3OvY9dy1c0ck
+resources:
+  - uri: /*
+    groups:
+      - grafana_users

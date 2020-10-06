@@ -1,0 +1,17 @@
+redirection-url: http://jaeger.qcloud.jijiechen.com
+discovery-url: https://keycloak.qcloud.jijiechen.com/auth/realms/master
+upstream-url: http://127.0.0.1:16686/
+skip-openid-provider-tls-verify: true
+client-id: jaeger-client
+client-secret: 35e4bcb1-567a-4d03-b9ac-a4cf38841e96
+enable-refresh-tokens: true
+listen: :8000
+secure-cookie: false
+# listen: :8443
+tls-cert: 
+tls-private-key: 
+encryption-key: nkOfcT6jYCsXFuV5YRkt3OvY9dy1c0ck
+resources:
+  - uri: /*
+    groups:
+      - jaeger_users

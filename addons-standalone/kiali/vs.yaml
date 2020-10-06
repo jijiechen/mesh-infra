@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: addons-kiali
+spec:
+  gateways:
+  - addons-kiali-gateway
+  hosts:
+  - '*'
+  http:
+    - name: kiali
+      headers:
+        request:
+          set:
+            X-Forwarded-Port: "80"
+      route:
+      - destination:
+          host: addons-kiali
+          port:
+            number: 8000

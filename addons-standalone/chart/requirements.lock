@@ -1,0 +1,18 @@
+dependencies:
+- name: keycloak
+  repository: https://codecentric.github.io/helm-charts/
+  version: 9.3.0
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: ^11.7.0
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: ^5.6.11
+- name: kiali-server
+  repository: https://kiali.org/helm-charts/
+  version: 1.24.0
+- name: jaeger
+  repository: https://jaegertracing.github.io/helm-charts
+  version: 0.35.0
+digest: sha256:b56b935c75bcf548906997f76ea0968382c662fa0baf87694da3d0b14c2af7d5
+generated: "2020-10-04T19:13:06.437319+08:00"

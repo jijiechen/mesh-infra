@@ -1,0 +1,22 @@
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: addons-grafana
+spec:
+  gateways:
+  - addons-grafana-gateway
+  hosts:
+  - '*'
+  http:
+    - name: grafana
+      headers:
+        request:
+          set:
+            X-Forwarded-Port: "80"
+      route:
+      - destination:
+          host: addons-grafana
+          port:
+            number: 8000
+

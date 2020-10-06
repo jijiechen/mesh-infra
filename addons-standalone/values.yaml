@@ -1,0 +1,104 @@
+
+
+
+
+# https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+grafana:
+  replicas: 1
+  grafana.ini:
+    auth.anonymous: 
+      enabled: true
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus.istio-system.svc:9090
+        access: proxy
+        isDefault: true
+  dashboardProviders: 
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'builtin'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/builtin
+      - name: 'customized'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/customized
+  dashboards:
+    builtin:
+      mesh:
+        url: https://grafana.com/api/dashboards/7639/revisions/33/download
+        datasource: Prometheus
+      service:
+        url: https://grafana.com/api/dashboards/7636/revisions/33/download
+        datasource: Prometheus
+      workload:
+        url: https://grafana.com/api/dashboards/7630/revisions/33/download
+        datasource: Prometheus
+      controlplane:
+        url: https://grafana.com/api/dashboards/7645/revisions/33/download
+        datasource: Prometheus
+      
+jaeger:
+  agent:
+    enabled: false
+  query:
+    agentSidecar: 
+      enabled: false
+  collector:
+    service:
+      type: ClusterIP
+      grpc:
+        port: 14250
+      http: {}
+      zipkin: 
+        port: 9411
+  provisionDataStore:
+    cassandra: true
+  storage:
+    cassandra:
+      host: addons-jaeger-cassandra
+      nameOverride: addons-jaeger-cassandra
+  cassandra:
+    fullnameOverride: addons-jaeger-cassandra
+    config:
+      cluster_size: 1
+
+kiali-server:
+  deployment:
+    image_pull_policy: IfNotPresent
+  auth:
+    strategy: anonymous
+
+
+# helm repo add codecentric https://codecentric.github.io/helm-charts/
+# helm install keycloak codecentric/keycloak -f ./keycloak.values.yaml
+keycloak:
+  extraVolumes: |
+    - name: server-certificate
+      secret:
+        secretName: addon-certificates
+  extraVolumeMounts: |
+    - name: server-certificate
+      mountPath: /etc/x509/https
+      readOnly: true
+  extraEnv: |
+    - name: KEYCLOAK_USER
+      value: admin
+    - name: KEYCLOAK_PASSWORD
+      value: password
+    - name: PROXY_ADDRESS_FORWARDING
+      value: 'true'

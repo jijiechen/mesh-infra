@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: addons-jaeger
+spec:
+  gateways:
+  - addons-jaeger-gateway
+  hosts:
+  - '*'
+  http:
+    - name: jaeger
+      headers:
+        request:
+          set:
+            X-Forwarded-Port: "80"
+      route:
+      - destination:
+          host: addons-jaeger-query
+          port:
+            number: 8000

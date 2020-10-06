@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: addons-keycloak-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      mode: PASSTHROUGH
+    hosts:
+    - keycloak.qcloud.jijiechen.com
