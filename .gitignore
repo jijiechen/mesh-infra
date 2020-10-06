@@ -1,3 +1,5 @@
 
 
-certs/server.wildcard.pem
+
+.srl
+.DS_Store
