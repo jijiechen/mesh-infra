@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Generate CA:
-    # openssl genrsa -out ./ca-key.pem 4096
-    # openssl req -new -x509 -nodes -sha256 -key ca-key.pem -out ca-cert.pem
 
 # Generate Certificate:
     # edit openssl.cnf
