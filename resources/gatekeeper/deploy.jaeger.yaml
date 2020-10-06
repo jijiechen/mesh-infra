@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: addons-kiali
+  name: addons-jaeger-query
   namespace: istio-system
 spec:
   template:
@@ -10,7 +10,7 @@ spec:
       - name: keycloak-gatekeeper
         image: quay.io/keycloak/keycloak-gatekeeper:10.0.0
         args:
-          - --config=/etc/gatekeeper-config/kiali.yaml
+          - --config=/etc/gatekeeper-config/jaeger.yaml
         ports:
           - containerPort: 8000
             name: gatekeeper-http
@@ -20,4 +20,4 @@ spec:
       volumes:
         - name: gatekeeper-config
           configMap:
-            name: oauth-proxy-gatekeeper-config
+            name: addons-oidc-gatekeeper-config

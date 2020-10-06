@@ -25,33 +25,55 @@ if [ -z "$HELM_CMD" ]; then
     exit 1
 fi
 
-INGRESS_GATEWAY_ZHIYAN_LOG_NAME=$1
-if [ -z "$INGRESS_GATEWAY_ZHIYAN_LOG_NAME" ]; then
-    echo "Please use parameter 1 to specify zhiyan log name for ingress gateway access log as:"
-    echo "install.sh <logname>"
-    exit 1
-fi
 
-LINE_BREAK=$'\n'
-cp istio-operator-overrides/configmap.zhiyan-integration.yaml istio-operator-overrides/.istio-install-manifest-configmap.zhiyan-integration.yaml
-echo "  log-name: $INGRESS_GATEWAY_ZHIYAN_LOG_NAME$LINE_BREAK" >> istio-operator-overrides/.istio-install-manifest-configmap.zhiyan-integration.yaml
 
-# Build
-istioctl manifest generate -f ./istio-operator-config.yaml > istio-operator-overrides/.istio-install-manifest-pre.yaml
-# kubectl kustomize ./istio-operator-overrides > istio-operator-overrides/.istio-install-manifest-post.yaml
 
-# Install 
-CTX=$(kubectl config current-context)
-CLUSTER=$(kubectl config view -o jsonpath="{.contexts[?(@.name == '$CTX')].context.cluster}")
-CLUSTER_SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name == '$CLUSTER')].cluster.server}")
-echo "Connecting to cluster '$CLUSTER' at $CLUSTER_SERVER"
-kubectl cluster-info
 
-echo "Installing resources..."
-kubectl create namespace istio-system 2>/dev/null || true
-kubectl apply -f istio-operator-overrides/.istio-install-manifest-pre.yaml
-kubectl rollout status deployment/istiod -n istio-system
-kubectl rollout status deployment/istio-ingressgateway -n istio-system
 
-# Cleanup
-ls -a istio-operator-overrides | grep '.istio-install-manifest' | xargs -I % rm -f istio-operator-overrides/%
+# make certificate!
+
+kubectl create namespace istio-system
+kubectl create secret tls addon-certificates --key server-qcloud.key --cert server-qcloud.pem
+
+
+# install istiod
+
+# edit cm/istio 
+# use /dev/stdout
+# restart istio-ingress-gateway
+
+
+
+
+cd chart
+
+
+
+
+kubectl apply -f ./keycloak/gw.yaml
+kubectl apply -f ./keycloak/vs.yaml
+
+# update DNS settings
+
+
+helm template addons -n istio-system ./chart -f ./values.yaml > gatekeeper/.addons-install-pre.yaml
+
+kubectl kustomize ./gatekeeper > gatekeeper/.addons-install-post.yaml
+
+kubectl apply -f gatekeeper/.addons-install-post.yaml
+
+
+
+# create keycloak client: kiali-client, grafana-client, jaeger-client
+    # Access Type: confidential
+    # Mappers: audiences/groups  (required claim name: groups)
+# create user/group
+    # user: basic
+    # groups: kiali_users, grafana_users, jaeger_users
+
+# edit cm/oauth-proxy-gatekeeper-config: use correct client-secret
+# restart pods: grafana/kiali/jaeger
+# edit svc, add proxy port 8000: grafana/kiali/jaeger
+# k apply gw/vs: grafana/kiali/jaeger
+
+# grafana 可能不需要 gatekeeper!

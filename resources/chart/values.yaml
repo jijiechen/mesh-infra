@@ -1,5 +1,10 @@
 
-
+switches:
+  keycloak-enabled: false
+  prometheus-enabled: false
+  grafana-enabled: false
+  kiali-enabled: false
+  jaeger-enabled: false
 
 
 # https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml

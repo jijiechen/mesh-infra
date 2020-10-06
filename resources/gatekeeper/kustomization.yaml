@@ -3,15 +3,13 @@ resources:
 
 patchesStrategicMerge:
 - deploy.kiali.yaml
-- deploy.grafana.yaml
 - deploy.jaeger.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
 configMapGenerator:
-- name: oauth-proxy-gatekeeper-config
+- name: addons-oidc-gatekeeper-config
   namespace: istio-system
   files:
-  - gatekeeper-config/kiali.yaml
-  - gatekeeper-config/grafana.yaml
-  - gatekeeper-config/jaeger.yaml
+  - configmap/kiali.yaml
+  - configmap/jaeger.yaml

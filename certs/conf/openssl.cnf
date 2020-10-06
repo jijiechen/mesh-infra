@@ -315,5 +315,3 @@ authorityKeyIdentifier=keyid,issuer:always
 proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo
 
 [ alt_names ]
-DNS.2 = meshsso.109.244.192.244.nip.io
-DNS.3 = addons-kube-oidc-proxy.istio-system.svc

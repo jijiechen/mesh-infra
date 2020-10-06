@@ -10,15 +10,20 @@ dependencies:
   - name: keycloak
     version: ^9.3.0
     repository: https://codecentric.github.io/helm-charts/
+    condition: switches.keycloak-enabled
   - name: prometheus
     version: ^11.7.0
     repository: https://prometheus-community.github.io/helm-charts
+    condition: switches.prometheus-enabled
   - name: grafana
     version: ^5.6.11
     repository: https://grafana.github.io/helm-charts
+    condition: switches.grafana-enabled
   - name: kiali-server
     version: ^1.22.0
     repository: https://kiali.org/helm-charts/
+    condition: switches.kiali-enabled
   - name: jaeger
     version: ^0.35.0
     repository: https://jaegertracing.github.io/helm-charts
+    condition: switches.jaeger-enabled

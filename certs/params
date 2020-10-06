@@ -1,0 +1,5 @@
+domains=(qcloud.jijiechen.com
+    *.qcloud.jijiechen.com
+    *.istio-system.svc
+    *.istio-system.svc.cluster.local)
+
