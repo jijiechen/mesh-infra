@@ -3,3 +3,6 @@
 
 .srl
 .DS_Store
+
+.addons-install-pre.yaml
+.addons-install-post.yaml

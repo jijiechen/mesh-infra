@@ -92,6 +92,7 @@ jaeger:
       cluster_size: 1
 
 kiali-server:
+  fullnameOverride: ''
   deployment:
     image_pull_policy: IfNotPresent
   auth:
@@ -104,7 +105,7 @@ keycloak:
   extraVolumes: |
     - name: server-certificate
       secret:
-        secretName: addon-certificates
+        secretName: addons-certificates
   extraVolumeMounts: |
     - name: server-certificate
       mountPath: /etc/x509/https
