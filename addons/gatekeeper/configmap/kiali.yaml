@@ -1,9 +1,9 @@
 redirection-url: http://kiali.WILDCARD_BASE_DOMAIN
-discovery-url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/master
+discovery-url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/mesh
 upstream-url: http://127.0.0.1:20001/
 skip-openid-provider-tls-verify: true
 client-id: kiali-client
-client-secret: AAAAAAAA
+client-secret: KKKKKKKK
 enable-refresh-tokens: true
 listen: :8000
 secure-cookie: false

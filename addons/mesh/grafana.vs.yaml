@@ -18,5 +18,5 @@ spec:
       - destination:
           host: addons-grafana
           port:
-            number: 8000
+            number: 80
 

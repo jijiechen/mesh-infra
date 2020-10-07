@@ -46,13 +46,6 @@ sed -i '' "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/chart/values.
 echo "Installing Istiod..."
 istioctl install -f ./istio-operator.yaml -n istio-system
 
-sleep 5
-INGRESS_IP=$(kubectl get svc/istio-ingressgateway -o 'jsonpath={.status.loadBalancer.ingress[0].ip}')
-echo "Ingress gateway IP is $INGRESS_IP"
-echo ""
-
-
-
 
 echo "Installing KeyCloak..."
 kubectl create secret tls addons-certificates --key certs/server/server.key --cert certs/server/server.pem -n istio-system
@@ -62,7 +55,10 @@ helm install addons-keycloak -n istio-system ./addons/chart \
 kubectl apply -f ./addons/mesh/keycloak.gw.yaml -n istio-system
 kubectl apply -f ./addons/mesh/keycloak.vs.yaml -n istio-system
 
+sleep 5
 echo ""
+INGRESS_IP=$(kubectl get svc/istio-ingressgateway -o 'jsonpath={.status.loadBalancer.ingress[0].ip}')
+echo "Ingress gateway IP is $INGRESS_IP"
 echo "Keycloak hostname: keycloak.$WILDCARD_BASE_DOMAIN"
 echo "Please update DNS and create oidc clients in KeyCloak:"
 echo "DNS: *.$WILDCARD_BASE_DOMAIN"
@@ -85,11 +81,12 @@ helm template addons -n istio-system ./addons/chart \
     --set-string 'switches.prometheus-enabled=true,switches.grafana-enabled=true,switches.kiali-enabled=true,switches.jaeger-enabled=true' \
     > ./addons/gatekeeper/.addons-install-pre.yaml
 kubectl kustomize ./addons/gatekeeper > ./addons/gatekeeper/.addons-install-post.yaml
-
 kubectl apply  -n istio-system -f ./addons/gatekeeper/.addons-install-post.yaml
-kubectl rollout status addons-kiali -n istio-system
-kubectl rollout status addons-grafana -n istio-system
-kubectl rollout status addons-jaeger-query -n istio-system
+
+sleep 3
+kubectl rollout status deploy/addons-kiali -n istio-system
+kubectl rollout status deploy/addons-grafana -n istio-system
+kubectl rollout status deploy/addons-jaeger-query -n istio-system
 
 
 for SVC in grafana kiali jaeger ; do
