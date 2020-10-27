@@ -6,9 +6,23 @@ switches:
   kiali-enabled: false
   jaeger-enabled: false
 
+prometheus:
+  serviceAccounts:
+    alertmanager:
+      create: false
+    pushgateway:
+      create: false
+  alertmanager:
+    enabled: false
+  pushgateway:
+    enabled: false
+
+
 # https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 grafana:
   replicas: 1
+  persistence:
+    enabled: false
   grafana.ini:
     server:
       root_url: http://grafana.WILDCARD_BASE_DOMAIN
@@ -75,7 +89,8 @@ grafana:
       controlplane:
         url: https://grafana.com/api/dashboards/7645/revisions/33/download
         datasource: Prometheus
-      
+
+# https://github.com/jaegertracing/helm-charts/blob/master/charts/jaeger/values.yaml   
 jaeger:
   agent:
     enabled: false
@@ -97,6 +112,8 @@ jaeger:
       host: addons-jaeger-cassandra
       nameOverride: addons-jaeger-cassandra
   cassandra:
+    persistence:
+      enabled: false
     fullnameOverride: addons-jaeger-cassandra
     config:
       cluster_size: 1
@@ -112,6 +129,8 @@ kiali-server:
 # helm repo add codecentric https://codecentric.github.io/helm-charts/
 # helm install keycloak codecentric/keycloak -f ./keycloak.values.yaml
 keycloak:
+  postgresql:
+    enabled: false
   extraVolumes: |
     - name: server-certificate
       secret:

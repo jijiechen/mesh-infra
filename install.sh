@@ -39,9 +39,9 @@ until [[ $CONFIRM =~ ^[Y]$ ]]; do
 done
 CONFIRM=
 
-sed -i '' "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/mesh/*
-sed -i '' "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/gatekeeper/configmap/*
-sed -i '' "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/chart/values.yaml
+sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/mesh/*
+sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/gatekeeper/configmap/*
+sed -i "s/WILDCARD_BASE_DOMAIN/$WILDCARD_BASE_DOMAIN/" ./addons/chart/values.yaml
 
 echo "Installing Istiod..."
 istioctl install -f ./istio-operator.yaml -n istio-system

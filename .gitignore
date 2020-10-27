@@ -6,3 +6,5 @@
 
 .addons-install-pre.yaml
 .addons-install-post.yaml
+
+certs/server/ca.pem
