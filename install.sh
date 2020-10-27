@@ -57,7 +57,7 @@ kubectl apply -f ./addons/mesh/keycloak.vs.yaml -n istio-system
 
 sleep 5
 echo ""
-INGRESS_IP=$(kubectl get svc/istio-ingressgateway -o 'jsonpath={.status.loadBalancer.ingress[0].ip}')
+INGRESS_IP=$(kubectl get svc/istio-ingressgateway -n istio-system -o 'jsonpath={.status.loadBalancer.ingress[0].ip}')
 echo "Ingress gateway IP is $INGRESS_IP"
 echo "Keycloak hostname: keycloak.$WILDCARD_BASE_DOMAIN"
 echo "Please update DNS and create oidc clients in KeyCloak:"

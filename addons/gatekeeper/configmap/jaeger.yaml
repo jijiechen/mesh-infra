@@ -2,8 +2,8 @@ redirection-url: http://jaeger.WILDCARD_BASE_DOMAIN
 discovery-url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/mesh
 upstream-url: http://127.0.0.1:16686/
 skip-openid-provider-tls-verify: true
-client-id: jaeger-client
-client-secret: JJJJJJJJ
+client-id: OIDC_CLIENT_ID
+client-secret: OIDC_CLIENT_SECRET
 enable-refresh-tokens: true
 listen: :8000
 secure-cookie: false

@@ -23,6 +23,8 @@ grafana:
   replicas: 1
   persistence:
     enabled: false
+  testFramework:
+    enabled: false
   grafana.ini:
     server:
       root_url: http://grafana.WILDCARD_BASE_DOMAIN
@@ -36,8 +38,8 @@ grafana:
     auth.generic_oauth:
       name: OpenId
       enabled: true
-      client_id: grafana-client
-      client_secret: GGGGGGGG
+      client_id: OIDC_CLIENT_ID
+      client_secret: OIDC_CLIENT_SECRET
       scopes: openid profile email
       auth_url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/mesh/protocol/openid-connect/auth
       token_url: https://keycloak.WILDCARD_BASE_DOMAIN/auth/realms/mesh/protocol/openid-connect/token
@@ -124,7 +126,7 @@ kiali-server:
     image_pull_policy: IfNotPresent
   auth:
     strategy: anonymous
-
+todo: add prometheus server address...
 
 # helm repo add codecentric https://codecentric.github.io/helm-charts/
 # helm install keycloak codecentric/keycloak -f ./keycloak.values.yaml
