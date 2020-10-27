@@ -7,6 +7,12 @@ switches:
   jaeger-enabled: false
 
 prometheus:
+  server:
+    enabled: true
+    statefulSet:
+      enabled: false
+    persistentVolume:
+      enabled: false
   serviceAccounts:
     alertmanager:
       create: false
