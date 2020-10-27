@@ -126,7 +126,13 @@ kiali-server:
     image_pull_policy: IfNotPresent
   auth:
     strategy: anonymous
-todo: add prometheus server address...
+  external_services:
+    prometheus:
+      url: http://addons-prometheus-server.istio-system.svc
+    grafana:
+      url: http://addons-grafana.istio-system.svc
+    tracing:
+      in_cluster_url: http://addons-jaeger-query.istio-system.svc
 
 # helm repo add codecentric https://codecentric.github.io/helm-charts/
 # helm install keycloak codecentric/keycloak -f ./keycloak.values.yaml
