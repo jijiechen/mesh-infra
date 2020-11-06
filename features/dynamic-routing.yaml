@@ -1,0 +1,51 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: dynamic-routing
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: VIRTUAL_HOST
+    match:
+      context: GATEWAY
+    patch:
+      operation: ADD
+      value:
+        name: dynamic_routing
+        domains:
+          - '192.168.1.150'
+          - '192.168.1.150:*'
+        routes:
+          - name: "wildcard-matching"
+            match:
+              prefix: "/"
+            route:
+              cluster_header: "x-mesh-service"
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.http_connection_manager"
+            subFilter:
+              name: "envoy.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+       name: envoy.x-mesh-service-helper
+       typed_config:
+         "@type": "type.googleapis.com/envoy.config.filter.http.lua.v2.Lua"
+         inlineCode: |
+          function envoy_on_request(handle)
+            local metadata = handle:streamInfo():dynamicMetadata()
+            local headers = handle:headers()
+            local mesh_service = headers:get("x-mesh-service")
+
+            if mesh_service ~= nil then
+              handle:headers():replace("x-mesh-service", "outbound|9080||" .. mesh_service .. ".svc.cluster.local")
+            end
+          end

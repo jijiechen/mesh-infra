@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: respond-x-request-id
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.http_connection_manager"
+            subFilter:
+              name: "envoy.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+       name: envoy.request-id-responder
+       typed_config:
+         "@type": "type.googleapis.com/envoy.config.filter.http.lua.v2.Lua"
+         inlineCode: |
+          function envoy_on_request(handle)
+             local metadata = handle:streamInfo():dynamicMetadata()
+             local headers = handle:headers()
+             local rid = headers:get("x-request-id")
+
+             if rid ~= nil then
+               metadata:set("envoy.filters.http.lua", "req.x-request-id", rid)
+             end
+           end
+
+           function envoy_on_response(handle)
+             local metadata = handle:streamInfo():dynamicMetadata():get("envoy.filters.http.lua")
+             local rid = metadata["req.x-request-id"]
+             if rid ~= nil then
+               handle:headers():add("x-request-id", rid)
+             end
+           end
