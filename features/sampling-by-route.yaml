@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: bookinfo-gateway-sampling
+  namespace: istio-system
+spec:
+  configPatches:
+  - applyTo: HTTP_ROUTE
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        portNumber: 80
+        vhost:
+          # istioctl pc routes istio-ingressgateway-6785d64647-7hzjk -n istio-system -o json
+          name: "bookinfo.apps.jijiechen.com:80"
+          route:
+            action: ANY
+    patch:
+      operation: MERGE
+      value:
+        tracing:
+          random_sampling:
+            numerator: 100
+            denominator: HUNDRED
+            # denominator: TEN_THOUSAND
