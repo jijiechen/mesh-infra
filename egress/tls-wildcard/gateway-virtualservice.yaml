@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: egress-https-forwarder
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - egress-https
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - "*"
+    route:
+    - destination:
+        host: egress-http-forwarder.local
+        port:
+          number: 80
