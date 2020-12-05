@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS #该字段与serviceEntry的字段相同
+    hosts:
+    - '*'
+    tls:
+      mode: PASSTHROUGH #透传模式，不在网关上终止TLS，由sidecar发起TLS
