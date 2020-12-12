@@ -1,0 +1,68 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  namespace: istio-system
+  name: egress-traffic-forwarder
+  labels:
+    mesh-feature: wildcard-egress
+spec:
+  workloadSelector:
+    labels:
+      istio: egressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      context: GATEWAY
+    patch:
+      operation: ADD
+      value:
+        name: "outbound|20480||egress-http-forwarder.local"
+        '@type': type.googleapis.com/envoy.config.cluster.v3.Cluster
+        connect_timeout: 10s
+        per_connection_buffer_limit_bytes: 32768
+        lb_policy: CLUSTER_PROVIDED
+        health_checks: []
+        cluster_type:
+          name: envoy.clusters.dynamic_forward_proxy
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+            dns_cache_config:
+              name: dynamic_forward_proxy_cache_config
+              dns_lookup_family: V4_ONLY
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.http_connection_manager"
+            subFilter:
+              name: "envoy.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.dynamic_forward_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+          dns_cache_config:
+            name: dynamic_forward_proxy_cache_config
+            dns_lookup_family: V4_ONLY
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8443
+        filterChain:
+          filter:
+            name: "istio.stats"
+    patch:
+      operation: INSERT_AFTER
+      value:
+        name: envoy.filters.network.sni_dynamic_forward_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.sni_dynamic_forward_proxy.v3alpha.FilterConfig
+          port_value: 443
+          dns_cache_config:
+            name: dynamic_forward_proxy_cache_config
+            dns_lookup_family: V4_ONLY

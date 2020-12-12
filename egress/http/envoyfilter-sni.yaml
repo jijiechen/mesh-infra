@@ -1,0 +1,51 @@
+
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  namespace: istio-system
+  name: egress-downstream-sni-forwarder
+  labels:
+    mesh-feature: wildcard-egress
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        portNumber: 443
+        filterChain:
+          filter:
+            name: istio.stats
+    patch:
+      operation: INSERT_BEFORE
+      value:
+         name: forward_downstream_sni
+         config: {}
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  namespace: istio-system
+  name: egress-gateway-sni-verifier
+  labels:
+    mesh-feature: wildcard-egress
+spec:
+  workloadSelector:
+    labels:
+      istio: egressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8443
+        filterChain:
+          filter:
+            name: istio.stats
+    patch:
+      operation: INSERT_BEFORE
+      value:
+         name: sni_verifier
+         config: {}

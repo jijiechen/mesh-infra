@@ -1,7 +1,10 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: egress-http
+  namespace: istio-system
+  name: egress-gateway-wildcard
+  labels:
+    mesh-feature: wildcard-egress
 spec:
   selector:
     istio: egressgateway
@@ -12,3 +15,46 @@ spec:
       protocol: HTTP
     hosts:
     - '*'
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - '*'
+    tls:
+      mode: PASSTHROUGH
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  namespace: istio-system
+  name: egress-http-all
+  labels:
+    mesh-feature: wildcard-egress
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - egress-gateway-wildcard
+  http:
+  - match:
+    - port: 80
+      uri:
+        prefix: /
+    route:
+    - destination:
+        host: egress-http-forwarder.local
+        port:
+          number: 20480
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - "*"
+    route:
+    - destination:
+        host: egress-http-forwarder.local
+        port:
+          number: 20480

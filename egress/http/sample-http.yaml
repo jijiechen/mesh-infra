@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: http-domains-egress
+spec:
+  hosts:
+  - "neverssl.com"
+  - "www.qq.com"
+  gateways:
+  - mesh
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        port:
+          number: 80
