@@ -20,7 +20,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: direct-https-ip-through-egress-gateway
+  name: https-egress-domains
 spec:
   hosts:
   - "api.tlp.tencent.com"
