@@ -1,0 +1,13 @@
+[Unit]
+Description=Envoy
+
+[Service]
+ExecStart=/usr/bin/envoy -c ./envoy/envoy.yaml
+Restart=always
+RestartSec=5
+KillMode=mixed
+SyslogIdentifier=envoy
+WorkingDirectory=PWD/
+
+[Install]
+WantedBy=multi-user.target

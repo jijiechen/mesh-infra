@@ -19,6 +19,7 @@ echo "DNS.1 = $WILDCARD_BASE_DOMAIN" >> $TMP_DIR/openssl.cnf
 echo "DNS.2 = *.$WILDCARD_BASE_DOMAIN" >> $TMP_DIR/openssl.cnf
 
 openssl genrsa -out $TMP_DIR/server.key 2048
+#  openssl pkcs8 -topk8 -nocrypt -in server.key > server_new.key
 openssl req -new -key $TMP_DIR/server.key -out $TMP_DIR/server.csr -subj "/C=CN/ST=Beijing/L=Chaoyang/O=DevOps/OU=PKI/CN=$WILDCARD_BASE_DOMAIN"
 openssl x509 -req -extensions v3_req -sha256 -days 365 \
     -CA $TMP_DIR/ca.pem -CAkey $TMP_DIR/ca.key -CAcreateserial -extfile $TMP_DIR/openssl.cnf \

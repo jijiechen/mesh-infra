@@ -1,0 +1,12 @@
+node:
+  id: id_1
+  cluster: main
+admin:
+  access_log_path: /dev/null
+dynamic_resources:
+  cds_config:
+    # working directory is the parent directory of this file
+    path: ./envoy/cds.yaml
+  lds_config:
+    # working directory is the parent directory of this file
+    path: ./envoy/lds.yaml

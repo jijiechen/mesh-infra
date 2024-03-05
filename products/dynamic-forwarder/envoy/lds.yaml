@@ -1,0 +1,122 @@
+version_info: "0"
+resources:
+  - '@type': type.googleapis.com/envoy.config.listener.v3.Listener
+    name: listener_0
+    address:
+      socket_address:
+        protocol: TCP
+        address: 0.0.0.0
+        port_value: 443
+    filter_chains:
+    - transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+          common_tls_context:
+            tls_certificates:
+            - certificate_chain:
+                filename: ./data/certs/server.pem
+              private_key:
+                filename: ./data/certs/server.key
+            validation_context:
+              trusted_ca:
+                filename: ./data/certs/ca.pem
+      filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: ingress_http
+          use_remote_address: false
+          xff_num_trusted_hops: 0
+          stream_idle_timeout: 60s
+          request_timeout: 7200s
+          route_config:
+            name: proxy_route
+            virtual_hosts:
+            - name: proxy_service
+              domains: ["*"]
+              request_headers_to_remove: ["Proxy-Authorization", "Proxy-Connection"]
+              routes:
+              - match:
+                  prefix: "/"
+                route:
+                  cluster: dynamic_forward_proxy_cluster
+              - match:
+                  connect_matcher: {}
+                route:
+                  cluster: dynamic_forward_proxy_cluster
+                  upgrade_configs:
+                  - upgrade_type: CONNECT
+                    connect_config: {}
+          http_filters:
+          - name: envoy.lua
+            typed_config:
+              "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+              inlineCode: |
+                function in_array(arr, item)
+                  if item ~= nil then
+                    for _, el in pairs(arr) do
+                      if item == el then
+                        return true
+                      end
+                    end
+                  end
+                  return false
+                end
+
+                function read_all(file)
+                  local f = assert(io.open(file, "rb"))
+                  local content = f:read("*all")
+                  f:close()
+                  return content
+                end
+
+                function split(str)
+                  local lines = {}
+                  for s in str:gmatch("[^\r\n]+") do
+                      table.insert(lines, s)
+                  end
+                  return lines
+                end
+
+                function starts_with(s, prefix)
+                  return string.sub(s, 1, string.len(prefix)) == prefix
+                end
+                
+                credentials_str = read_all("./data/users.txt")
+                blocked_hosts_str = read_all("./data/blocked-hosts.txt")
+
+                function envoy_on_request(request_handle)
+                  local client_ip = request_handle:streamInfo():downstreamDirectRemoteAddress()
+                  local is_internal = starts_with(client_ip, "10.") or starts_with(client_ip, "127.") or starts_with(client_ip, "172.") or starts_with(client_ip, "192.168.")
+
+                  local host = request_handle:headers():get(":authority"):gsub(":%d+", "")
+                  if in_array(split(blocked_hosts_str), host) then
+                    request_handle:respond({[":status"] = "502"}, "Bad Gateway")
+                    return
+                  end
+
+                  if credentials_str ~= nil and is_internal and starts_with(credentials_str, "BYPASS_AUTH_FOR_INTERNAL_USERS") then
+                    return
+                  end
+
+                  local auth = request_handle:headers():get("Proxy-Authorization")
+                  if auth ~= nil and string.sub(auth, 1, 6) == "Basic " then
+                    auth = string.sub(auth, 7)
+                  end
+
+                  if in_array(split(credentials_str), auth) then
+                      return
+                  end
+                  request_handle:respond({[":status"] = "407", ["Proxy-Authenticate"] = "Basic realm=\"DYNAMIC-FORWARDER\""}, "UnAuthorized")
+                end
+          - name: envoy.filters.http.dynamic_forward_proxy
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+              dns_cache_config:
+                name: dynamic_forward_proxy_cache_config
+                dns_lookup_family: V4_ONLY
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+ 
